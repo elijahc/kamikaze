@@ -102,3 +102,6 @@ ENV/
 
 # Ignore VScode config files
 .vscode/
+
+# Ignore ipynotebooks
+*.ipynb
