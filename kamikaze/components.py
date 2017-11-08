@@ -45,9 +45,9 @@ class CassetteFactory():
         ref_seq = self.reference.seq
         edit_pl = ''
         if pl.target.start < pl.pam_site.location.start:
-            edit_pl+=mut+str(ref_seq[pl.target.end:pl.pam_site.location.end]
+            edit_pl = mut+str(ref_seq[pl.target.end:pl.pam_site.location.end])
         else:
-            edit_pl+=str(ref_seq[pl.pam_site.location.start:pl.target.start])+mut
+            edit_pl = str(ref_seq[pl.pam_site.location.start:pl.target.start])+mut
 
         return edit_pl
 
