@@ -22,6 +22,13 @@ class Payload():
         self.pam_site = pam_site
         self.start = min([self.target.start,self.pam_site.location.start])
         self.stop = max([self.target.stop,self.pam_site.location.end])
+        
+        if self.target.start < self.pam_site.location.start:
+            # [Target]-[gap]-[PAM]
+            self.pam_rel_loc = 'downstream'
+        else:
+            # [PAM]-[gap]-[Target]
+            self.pam_rel_loc = 'upstream'
     
     def __str__(self):
         return str(self.ref_seq[self.start:self.stop])
@@ -32,10 +39,12 @@ class EditCassette():
         self.up_margin = up_margin
         self.down_margin = down_margin
 
-    def gRNA_site(self,pam_site=None):
-        if pam_site is None:
-            pam_site = self.nearest_pam_site()
-        return slice(max([pam_site.start-20,0]),pam_site.start)
+    def gRNA_site(self):
+        pam_site_loc = self.payload.pam_site.location
+        if pam_site_loc.strand == 1:
+            return slice(max([pam_site_loc.start-20,0]),int(pam_site_loc.start))
+        else:
+            return slice(int(pam_site_loc.start),min([len(self.payload.ref_seq),pam_site_loc.end+20]))
 
     def upstream_HA(self):
         uha_start = max([0,self.payload.start-self.up_margin])
@@ -51,11 +60,12 @@ class EditCassette():
         pl = self.payload
         ref_seq = pl.ref_seq
         edit_payload = ''
-        if pl.target.start < pl.pam_site.location.start:
+        if pl.pam_rel_loc == 'downstream':
+            # [MUT]-[gap]-[PAM]
             edit_pl = mut+str(ref_seq[pl.target.stop:pl.pam_site.location.end])
         else:
+            # [PAM]-[gap]-[MUT]
             edit_pl = str(ref_seq[pl.pam_site.location.start:pl.target.start])+mut
-
         return edit_pl
 
     def repair_seq(self,mut='GCU'):
@@ -63,7 +73,7 @@ class EditCassette():
         uha = self.upstream_HA()
         dha = self.downstream_HA()
         # edit_window = str(syn_pams[0])+str(self.ref_seq[pam_site.stop:self.target.start])+str(donor_seq)
-        out_seq = str(uha).upper()+str(repair_seq).upper()+str(dha).upper()
+        out_seq = str(uha).upper()+str(edited_payload).upper()+str(dha).upper()
         return Seq(out_seq,IUPAC.unambiguous_dna)
 
     # def __str__(self):

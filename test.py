@@ -14,4 +14,6 @@ rev_seqs = [ps.extract(cf.reference.seq) for ps in rev_sites]
 pl = cf.build_payload(shift(tgt,9))
 
 ala_scan = AlanineScan('kras_mrna_va.fa',slice(192,761))
+editing_cassettes = ala_scan.gen_edit_cassettes()
+ec = editing_cassettes[0]
 import ipdb; ipdb.set_trace()
