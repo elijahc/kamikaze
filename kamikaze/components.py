@@ -2,7 +2,7 @@ from Bio import SeqIO
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from Bio.SeqUtils import nt_search, seq3
 from Bio.SeqRecord import SeqRecord
-from parts import PAM, Payload
+from .parts import PAM, Payload
 
 class CassetteFactory():
     def __init__(self,fi,region):
@@ -39,6 +39,18 @@ class CassetteFactory():
         if pam_site is None:
             pam_site = self.nearest_pam_site(target)
         return Payload(self.reference.seq,target,pam_site)
+
+    def build_edit_cassette(self,target,pam_site=None,mut='GCU'):
+        pl = self.build_payload(target,pam_site)
+        ref_seq = self.reference.seq
+        edit_pl = ''
+        if pl.target.start < pl.pam_site.location.start:
+            edit_pl+=mut+str(ref_seq[pl.target.end:pl.pam_site.location.end]
+        else:
+            edit_pl+=str(ref_seq[pl.pam_site.location.start:pl.target.start])+mut
+
+        return edit_pl
+
 
 # TODO Rewrite Editing Cassette to support CassetteFactory
 class EditingCassette():
