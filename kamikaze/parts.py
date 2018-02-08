@@ -1,6 +1,9 @@
 from Bio.Alphabet import IUPAC
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
+from Bio.SeqFeature import SeqFeature,FeatureLocation
+from .edits import CodonEdit,Swap
 
 class PAM():
     def __init__(self,strain=None, seq=None):
@@ -45,7 +48,10 @@ class Slug():
         assert isinstance(pam_site,SeqFeature)
         self.ref_seq = ref_seq
         self.target = target
+        self.target_seq = self.ref_seq[self.target]
         self.pam_site = pam_site
+        pam_slc = slice(self.pam_site.location.start,self.pam_site.location.end)
+        self.pam_seq = self.ref_seq[pam_slc]
         self.start = min([self.target.start,self.pam_site.location.start])
         self.stop = max([self.target.stop,self.pam_site.location.end])
         
@@ -55,15 +61,40 @@ class Slug():
         else:
             # [PAM]-[gap]-[Target]
             self.pam_rel_loc = 'upstream'
+
+    def print(self):
+        out = ''
+        gap = ['-']*(len(self)-6)
+        if self.pam_rel_loc == 'downstream':
+            out+='TGT'
+            out+=''.join(gap)
+            out+='PAM'
+        else:
+            out+='PAM'
+            out+=''.join(gap)
+            out+='TGT'
+        print(out)
+        print(str(self))
+
     
     def __str__(self):
         return str(self.ref_seq[self.start:self.stop])
 
+    def __len__(self):
+        return len(self.ref_seq[self.start:self.stop])
+
+
 class Payload():
     def __init__(self,slug,up_margin=10,down_margin=10):
+        if not isinstance(up_margin,int):
+            raise TypeError('up_margin and down_margin must be ints')
+        elif not isinstance(down_margin,int):
+            raise TypeError('up_margin and down_margin must be ints')
+
         self.slug = slug
         self.up_margin = up_margin
         self.down_margin = down_margin
+
 
     def upstream_HA(self):
         uha_start = max([0,self.slug.start-self.up_margin])
@@ -81,10 +112,10 @@ class Payload():
         edit_payload = ''
         if pl.pam_rel_loc == 'downstream':
             # [MUT]-[gap]-[PAM]
-            edit_pl = mut+str(ref_seq[pl.target.stop:pl.pam_site.location.end])
+            edit_pl = mut()+str(ref_seq[pl.target.stop:pl.pam_site.location.end])
         else:
             # [PAM]-[gap]-[MUT]
-            edit_pl = str(ref_seq[pl.pam_site.location.start:pl.target.start])+mut
+            edit_pl = str(ref_seq[pl.pam_site.location.start:pl.target.start])+mut()
         
         uha = self.upstream_HA()
         dha = self.downstream_HA()
@@ -93,22 +124,97 @@ class Payload():
         return Seq(out_seq,IUPAC.unambiguous_dna)
 
 class EditCassette():
-    def __init__(self,slug,up_margin=10,down_margin=10,grna_len=20):
+    def __init__(self,slug,sg_promoter,
+                 chip_primer='GGGTTTGAAGGATACCAGCT',
+                 up_margin=10,
+                 down_margin=10,
+                 crispr_len=20):
         self.slug = slug
+        self.chip_primer = chip_primer
+        self.sg_promoter = sg_promoter
         self.up_margin = up_margin
         self.down_margin = down_margin
-        self.grna_len = grna_len
+        self.crispr_len = crispr_len
+
+        if isinstance(sg_promoter,Seq):
+            pass
+        elif isinstance(sg_promoter,str):
+            gRNA_promoter = Seq(sg_promoter,IUPAC.unambiguous_dna)
+        else:
+            raise TypeError("sg_promoter must be a string or Seq object")
 
     def payload(self):
-        return Payload(slug,self.up_margin,self.down_margin)
+        return Payload(self.slug,self.up_margin,self.down_margin)
 
     def gRNA_site(self):
-        pam_site_loc = self.payload.pam_site.location
+        """ Location of gRNA in refseq
+        ...
+        Returns
+        ----------
+        slice
+            slice location of gRNA_site within slug.ref_seq
+        """
+        
+        pam_site_loc = self.slug.pam_site.location
         if pam_site_loc.strand == 1:
-            return slice(max([pam_site_loc.start-grna_len,0]),int(pam_site_loc.start))
+            return slice(max([pam_site_loc.start-self.crispr_len,0]),int(pam_site_loc.start))
         else:
-            return slice(int(pam_site_loc.start),min([len(self.payload.ref_seq),pam_site_loc.end+grna_len]))
+            return slice(int(pam_site_loc.start),min([len(self.slug.ref_seq),pam_site_loc.end+self.crispr_len]))
+    
+    def assemble_oligo(self,sp_primer,edit=None):
+        """ Assemble completed edit cassette oligo
+        ...
+        Parameters
+        ----------
+        sp_primer : Seq or str
+            Subpool Primer sequence (~20bp)
 
+        gRNA_promoter : Seq or str
+            Promoter sequence for the CRISPR guide RNA (~35bp)
+        
+        edit : str or CodonEdit-like
+            if a string is passed it will substitute the codon for the string passed
 
-    # def __str__(self):
-    #     return self.assemble_oligo(mut='GCU')
+        Returns
+        ----------
+        SeqRecord
+            SeqRecord with all relevant features annotated
+        """
+        if isinstance(sp_primer,Seq):
+            pass
+        elif isinstance(sp_primer,str):
+            sp_primer = Seq(sp_primer,IUPAC.unambiguous_dna)
+        else:
+            raise TypeError("sp_primer must be a string or Seq object")
+
+        if isinstance(edit,CodonEdit):
+            mut = edit
+        elif isinstance(edit,str):
+            tgt_slc = self.slug.target
+            tgt_codon = self.slug.ref_seq[tgt_slc]
+            mut = Swap(codon=tgt_codon,new_codon=edit)
+        else:
+            raise TypeError("edit must be of type str or CodonEdit")
+
+        slug_len = len(self.slug)
+        pl = self.payload().assemble(mut)
+        self.crispr_rna = self.slug.ref_seq[self.gRNA_site()]
+
+        parts = [sp_primer,pl,self.sg_promoter,self.crispr_rna]
+        labels = ['subpool_primer','payload','gRNA_promoter','crRNA']
+
+        features = []
+        start=0
+        for lab,part in zip(labels,parts):
+            loc = FeatureLocation(start,start+len(part))
+            sf = SeqFeature(type=lab,location=loc)
+            features.append(sf)
+            start +=len(part)
+
+        out_seq = sp_primer+pl+self.sg_promoter+self.crispr_rna
+
+        edit_seq_rec = SeqRecord(seq=out_seq,
+                                 id=str(id(out_seq)),
+                                 name='test_name',
+                                 features=features)
+        return edit_seq_rec

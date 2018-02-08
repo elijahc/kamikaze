@@ -2,7 +2,7 @@ from Bio import SeqIO
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from Bio.SeqUtils import nt_search, seq3
 from Bio.SeqRecord import SeqRecord
-from .parts import PAM, Slug, EditCassette
+from .parts import PAM, Slug, Payload, EditCassette
 
 # TODO: Finish refactoring terminology change from Payload -> Slug
 class CassetteFactory():
@@ -16,8 +16,8 @@ class CassetteFactory():
     filename : string
         path sequence fasta
     reference : SeqIO
-
     pam : PAM
+    ha_margins : int
 
     Methods
     -------
@@ -30,12 +30,13 @@ class CassetteFactory():
         Will find nearest pam_site to target if not defined
 
     """
-    def __init__(self,filename,region):
+    def __init__(self,filename,region,ha_margins=10):
 
         assert isinstance(region,slice)
         self.region = region
         self.filename = filename
         self.reference = next(SeqIO.parse(filename,'fasta'))
+        self.ha_margins = ha_margins
         self.reference.features = [
             SeqFeature(FeatureLocation(region.start,region.stop),type='cds',strand=1)
             ]
@@ -82,41 +83,28 @@ class CassetteFactory():
             pam_site = self.nearest_pam_site(target)
         return Slug(self.reference.seq,target,pam_site)
 
-    def build_edit_cassette(self,target,pam_site=None,mut='GCU'):
-        pl = self.build_payload(target,pam_site)
-        return EditCassette(pl,up_margin=10,down_margin=10)
+    def build_payload(self,slug,mut='GCU'):
+        pl = Payload(slug)
+        return pl
 
-# TODO: Rewrite Editing Cassette to support CassetteFactory
-class EditingCassette():
-    def __init__(self,target,pam,up_margin=10,down_margin=10):
-        self.ref_seq = ref_seq
-        self.up_margin = up_margin
-        self.down_margin = down_margin
+    def build_cassette(self,slug,sg_promoter,up_margin=10,down_margin=10,crispr_len=20):
+        """ Build a cassette
+            ...
+            Parameters
+            ----------
+            slug : Slug
+            sg_promoter : str or Seq
+            up_margin : int, optional
+            down_margin : int, optional
+            crispr_len : int, optional
 
-        if isinstance(target,int):
-            self.target = slice(target,target+3)
-        elif isinstance(target,tuple):
-            self.target = slice(target[0],target[1])
-        elif isinstance(target,slice):
-            self.target = target
-        else: raise ValueError
-
-        self.pam = pam
-        self.pam_sites = [slice(s,s+3) for s in self.pam.find_in(self.ref_seq)]
-
-    def nearest_pam_site(self):
-        site_stop = min([s.stop for s in self.pam_sites if s.stop<self.target.start],key=lambda x:abs(x-self.target.start))
-        return slice(site_stop-3,site_stop)
-
-    def gRNA_seq(self,pam_site=None):
-        if pam_site is None:
-            pam_site = self.nearest_pam_site()
-        return self.ref_seq[self.gRNA_site(pam_site)]
-    
-    def build(self,donor_seq,pam_site=None):
-        if pam_site is None:
-            pam_site = self.nearest_pam_site()
-        grna_seq = self.gRNA_seq(pam_site)
-        pam_seq = self.ref_seq[pam_site]
-        repair = self.repair_seq(donor_seq,pam_site)
-        return Seq(str(grna_seq)+str(pam_seq)+str(repair),IUPAC.unambiguous_dna)
+            Returns
+            ----------
+            EditCassette
+                EditCassette that still needs assembled
+        """
+        ec = EditCassette(slug,sg_promoter=sg_promoter,
+                          up_margin=up_margin,
+                          down_margin=down_margin,
+                          crispr_len=crispr_len)
+        return ec

@@ -9,7 +9,7 @@
 [CrisprGE](http://crdd.osdd.net/servers/crisprge/)
 [WGE](http://www.sanger.ac.uk/htgt/wge/)
 
-# Construction Logic and terminology
+# Terminology
 
 |-SLUG-| : |TGT|...|PAM|    or    |PAM|...|TGT|
     The minimum basepair window that includes both the PAM site and the target *unedited* codon is referred to as a "slug". There are two possible configurations for a slug depending on whether the nearest PAM is up or downstream from the codon.
@@ -19,6 +19,7 @@
 
 |-PAYLOAD-| : |...[HA]...|EDITED-SLUG|...[HA]...|
 
+# Construction approach
 
 - Step along sequence according to supplied mutagensis (usually every codon, 3bp)
 - For each codon find Nearest PAM site to the codon to be edited and generate a slug
@@ -36,7 +37,7 @@
 | CRISPR RNA       |       20          |
 | TRACR RNA        |       106         |
 
-Gblock synthesis limit: 230
+synthesis limit: 230
 
 gRNA
 - CRISPR RNA: Binds to DNA
@@ -52,6 +53,13 @@ HA
 3` |     20-25      |         |     35        |     20     |                    | 5'
 3` | Subpool Primer | Payload | gRNA Promoter | CRISPR RNA | ~20bp of TRACR RNA | 5'
 
+| CRISPR RNA|PAM|
+          |
+          Cut site 3-4 bp upstream of the PAM
+
+
+Subpool primers have to be generated off of this:
+AGCTGGTATCCTTCAAACCC
 # Ideas
 Choose codon substitutions based on codon lookup tables by organism
 

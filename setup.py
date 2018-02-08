@@ -22,6 +22,7 @@ setup(
 
     # Choose your license
     license='Apache 2.0',
-    packages=find_packages()
+    packages=find_packages(),
+    package_data={'mypkg': ['data/*.fa']},
 )
 
