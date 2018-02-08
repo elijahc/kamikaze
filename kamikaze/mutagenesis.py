@@ -14,5 +14,5 @@ class AlanineScan(CassetteFactory):
     def gen_payloads(self):
         return [self.build_payload(tgt) for tgt in self.targets]
 
-    def gen_edit_cassettes(self,mut='GCU'):
+    def gen_edit_cassettes(self):
         return [self.build_edit_cassette(tgt) for tgt in self.targets]

@@ -2,8 +2,9 @@ from Bio import SeqIO
 from Bio.SeqFeature import SeqFeature, FeatureLocation
 from Bio.SeqUtils import nt_search, seq3
 from Bio.SeqRecord import SeqRecord
-from .parts import PAM, Payload, EditCassette
+from .parts import PAM, Slug, EditCassette
 
+# TODO: Finish refactoring terminology change from Payload -> Slug
 class CassetteFactory():
     def __init__(self,fi,region):
         assert isinstance(region,slice)
@@ -35,7 +36,7 @@ class CassetteFactory():
         pam_distances = [dist(target,ps) for ps in pam_sites]
         return min(zip(pam_sites,pam_distances),key=lambda x:x[1])[0]
         
-    def build_payload(self,target,pam_site=None):
+    def build_slug(self,target,pam_site=None):
         if pam_site is None:
             pam_site = self.nearest_pam_site(target)
         return Payload(self.reference.seq,target,pam_site)
