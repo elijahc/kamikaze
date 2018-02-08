@@ -9,8 +9,6 @@ class CassetteFactory():
     """
     Object for generating system components.
 
-    ...
-
     Attributes
     ----------
     exposure : float
@@ -37,8 +35,8 @@ class CassetteFactory():
 
         assert isinstance(region,slice)
         self.region = region
-        self.fi = fi
-        self.reference = next(SeqIO.parse(fi,'fasta'))
+        self.filename = filename
+        self.reference = next(SeqIO.parse(filename,'fasta'))
         self.reference.features = [
             SeqFeature(FeatureLocation(region.start,region.stop),type='cds',strand=1)
             ]
