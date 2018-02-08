@@ -6,7 +6,35 @@ from .parts import PAM, Slug, EditCassette
 
 # TODO: Finish refactoring terminology change from Payload -> Slug
 class CassetteFactory():
-    def __init__(self,fi,region):
+    """
+    Object for generating system components.
+
+    ...
+
+    Attributes
+    ----------
+    exposure : float
+        Exposure in seconds.
+
+    Methods
+    -------
+    find_pam_sites()
+        Find all PAM sites
+    nearest_pam_site(target)
+        Find PAM site nearest to 'target'
+    build_slug(target,pam_site=None)
+        Build slug for target and pam_site pair.
+        Will find nearest pam_site to target if not defined
+
+    """
+    def __init__(self,filename,region):
+        """This is the form of a docstring
+        Parameters
+        ----------
+        filename : str
+        region : CDS region of sequence
+        """
+
         assert isinstance(region,slice)
         self.region = region
         self.fi = fi
@@ -37,6 +65,13 @@ class CassetteFactory():
         return min(zip(pam_sites,pam_distances),key=lambda x:x[1])[0]
         
     def build_slug(self,target,pam_site=None):
+        """ Build a slug (|EDIT|...|PAM|) for a given target and pam
+        uses nearest pam if not defined
+        Parameters
+        ----------
+        filename : str
+        region : CDS region of sequence
+        """
         if pam_site is None:
             pam_site = self.nearest_pam_site(target)
         return Payload(self.reference.seq,target,pam_site)
