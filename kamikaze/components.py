@@ -86,7 +86,7 @@ class CassetteFactory():
         pl = self.build_payload(target,pam_site)
         return EditCassette(pl,up_margin=10,down_margin=10)
 
-# TODO Rewrite Editing Cassette to support CassetteFactory
+# TODO: Rewrite Editing Cassette to support CassetteFactory
 class EditingCassette():
     def __init__(self,target,pam,up_margin=10,down_margin=10):
         self.ref_seq = ref_seq

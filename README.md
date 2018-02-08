@@ -25,7 +25,6 @@
 - For each Slug make the desired edit based on mutagenesis plan
 - Add Homology Arms (HA) to complete generating the payload
 
-# Edit Cassette
 # Components
 
 | Component        | Size (bp)         |
@@ -42,7 +41,7 @@ Gblock synthesis limit: 230
 gRNA
 - CRISPR RNA: Binds to DNA
 - TRACR RNA: Binds to Enzyme
-- - 
+- - Riboswitch
 
 HA
 - syn-pam
@@ -52,8 +51,6 @@ HA
 
 3` |     20-25      |         |     35        |     20     |                    | 5'
 3` | Subpool Primer | Payload | gRNA Promoter | CRISPR RNA | ~20bp of TRACR RNA | 5'
-
-
 
 # Ideas
 Choose codon substitutions based on codon lookup tables by organism
