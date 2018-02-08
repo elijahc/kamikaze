@@ -87,7 +87,7 @@ class AlanineScan(Mutagenesis):
     gen_cassettes()
         Returns a list of edit cassettes for each target in self.targets
     """
-    def __init__(self,filename,region,**kwargs):
+    def __init__(self,filename,region,lib_name='Ala_scan',**kwargs):
         super().__init__(filename,region,**kwargs)
     
     def assemble_oligos(self,sp_primer,sg_promoter,crispr_rna_len=20,max_len=230):
@@ -97,11 +97,11 @@ class AlanineScan(Mutagenesis):
                 oligo = ec.assemble_oligo(sp_primer=sp_primer,edit='GCU')
                 oligos.append(oligo)
         else:
-            for tgt in self.targets:
+            for i,tgt in enumerate(self.targets):
                 slug = self.build_slug(tgt)
 
                 if self.ha_margins=='max':
-                    # spp + HA/2 + slug_len + HA/2 + sg_promoter + crRNA + ... = max_len
+                    # spp + HA/2 + slug_len + HA/2 + sg_promoter + crRNA + end_primer = max_len
                     len_static = len(sp_primer) + len(slug) +len(sg_promoter) + crispr_rna_len + 20
                     ha_margins = (max_len - len_static)/2
                 else:
@@ -110,14 +110,16 @@ class AlanineScan(Mutagenesis):
                 self.cassette_args = dict(
                     slug=slug,
                     sg_promoter=sg_promoter,
+                    # id=self.lib_name+'.'+str(i),
+                    name=self.lib_name,
+                    description=self.lib_name,
                     up_margin=int(ha_margins),
                     down_margin=int(ha_margins),
                     crispr_len=crispr_rna_len
                 )
-
                 ec = self.build_cassette(**self.cassette_args)
 
-                oligo = ec.assemble_oligo(sp_primer=sp_primer,edit='XXX')
+                oligo = ec.assemble_oligo(sp_primer=sp_primer,edit='GCU')
                 oligos.append(oligo)
 
         return oligos

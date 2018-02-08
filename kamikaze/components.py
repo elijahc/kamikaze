@@ -30,7 +30,7 @@ class CassetteFactory():
         Will find nearest pam_site to target if not defined
 
     """
-    def __init__(self,filename,region,ha_margins=10):
+    def __init__(self,filename,region,lib_name='default',ha_margins=10):
 
         assert isinstance(region,slice)
         self.region = region
@@ -41,6 +41,7 @@ class CassetteFactory():
             SeqFeature(FeatureLocation(region.start,region.stop),type='cds',strand=1)
             ]
         self.pam = PAM(strain='cas9')
+        self.lib_name = lib_name
         self._feature_by_type = lambda type: [f for f in self.reference.features if f.type==type]
 
     def find_pam_sites(self):
@@ -87,7 +88,8 @@ class CassetteFactory():
         pl = Payload(slug)
         return pl
 
-    def build_cassette(self,slug,sg_promoter,up_margin=10,down_margin=10,crispr_len=20):
+    def build_cassette(self,slug,sg_promoter,
+    up_margin=10,down_margin=10,crispr_len=20,name='cassette',description='cassette'):
         """ Build a cassette
             ...
             Parameters
@@ -106,5 +108,7 @@ class CassetteFactory():
         ec = EditCassette(slug,sg_promoter=sg_promoter,
                           up_margin=up_margin,
                           down_margin=down_margin,
-                          crispr_len=crispr_len)
+                          crispr_len=crispr_len,
+                          name=name,
+                          description=description)
         return ec

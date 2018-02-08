@@ -4,33 +4,19 @@ from Bio.Seq import Seq
 from Bio.SeqRecord import SeqRecord
 from Bio.SeqFeature import SeqFeature,FeatureLocation
 from .edits import CodonEdit,Swap
+from .pams import *
 
-class PAM():
-    def __init__(self,strain=None, seq=None):
-        if strain is not None and seq is None:
-            self.strain = strain
-            if strain.lower()=='cas9':
-                self.seq = Seq('NGG',IUPAC.unambiguous_dna)
 
-        elif strain is None and seq is not None:
-            self.seq = seq
-            if self.seq.upper()=='NGG': 
-                self.strain='cas9'
 
 class Slug():
-    """
-    Target codon, pam, and any gap between
+    """Target codon, pam, and any gap between
 
     Attributes
     ----------
     ref_seq : reference
-        
     target : slice
-        
     pam_site : SeqFeature
-
     start : int
-
     stop : int
 
     Methods
@@ -128,8 +114,12 @@ class EditCassette():
                  chip_primer='GGGTTTGAAGGATACCAGCT',
                  up_margin=10,
                  down_margin=10,
-                 crispr_len=20):
+                 crispr_len=20,
+                 name='<default>',
+                 description='<default>'):
         self.slug = slug
+        self.name = name
+        self.description = description
         self.chip_primer = chip_primer
         self.sg_promoter = sg_promoter
         self.up_margin = up_margin
@@ -200,8 +190,8 @@ class EditCassette():
         pl = self.payload().assemble(mut)
         self.crispr_rna = self.slug.ref_seq[self.gRNA_site()]
 
-        parts = [sp_primer,pl,self.sg_promoter,self.crispr_rna]
-        labels = ['subpool_primer','payload','gRNA_promoter','crRNA']
+        parts = [sp_primer,pl,self.sg_promoter,self.crispr_rna,self.chip_primer]
+        labels = ['subpool_primer','payload','gRNA_promoter','crRNA','end-primer']
 
         features = []
         start=0
@@ -211,10 +201,11 @@ class EditCassette():
             features.append(sf)
             start +=len(part)
 
-        out_seq = sp_primer+pl+self.sg_promoter+self.crispr_rna
+        out_seq = sp_primer+pl+self.sg_promoter+self.crispr_rna+self.chip_primer
 
         edit_seq_rec = SeqRecord(seq=out_seq,
-                                 id=str(id(out_seq)),
-                                 name='test_name',
+                                 id=self.name+'.'+str(id(out_seq)),
+                                 name=self.name,
+                                 description=str(mut),
                                  features=features)
         return edit_seq_rec
