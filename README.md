@@ -18,4 +18,14 @@ Guide RNA promoter 35
 Seed Sequence 20
 PAM 3
 
-Gblock synthesis limit: 230
+= Gblock synthesis limit: 230
+
+# Ideas
+Choose codon substitutions based on codon lookup tables by organism
+
+## Mutagenesis
+- Basic codon substitution (NNN -> NNN) 20 options
+- Truncation
+- Single Deletions (XNN, NXN, NNX)
+- Double Base Deletions (XXN, XNX, NXX)
+- Codon Deletion (XXX)
