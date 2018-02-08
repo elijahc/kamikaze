@@ -15,6 +15,32 @@ class PAM():
                 self.strain='cas9'
 
 class Slug():
+    """
+    Target codon, pam, and any gap between
+
+    Attributes
+    ----------
+    ref_seq : reference
+        
+    target : slice
+        
+    pam_site : SeqFeature
+
+    start : int
+
+    stop : int
+
+    Methods
+    -------
+    find_pam_sites()
+        Find all PAM sites
+    nearest_pam_site(target)
+        Find PAM site nearest to 'target'
+    build_slug(target,pam_site=None)
+        Build slug for target and pam_site pair.
+        Will find nearest pam_site to target if not defined
+
+    """
     def __init__(self,ref_seq,target,pam_site):
         assert isinstance(pam_site,SeqFeature)
         self.ref_seq = ref_seq

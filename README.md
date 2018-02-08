@@ -11,12 +11,19 @@
 
 # Construction Logic and terminology
 
-- Step along sequence according to supplied mutagensis (usually every codon, 3bp)
-- For each codon find Nearest PAM site to the codon to be edited
-- Make edit
-- The minimum basepair window that includes both the PAM site and the codon edit is referred to as a "slug". There are two possible configurations for a slug depending on whether the nearest PAM is up or downstream from the codon.
+|-SLUG-| : |TGT|...|PAM|    or    |PAM|...|TGT|
+    The minimum basepair window that includes both the PAM site and the target *unedited* codon is referred to as a "slug". There are two possible configurations for a slug depending on whether the nearest PAM is up or downstream from the codon.
 
-|EDIT|...| PAM |     or     | PAM |...|EDIT|
+|-ESLUG-| : |EDT|...|PAM|    or    |PAM|...|EDT|
+    The minimum basepair window that includes both the PAM site and the newly *edited* codon is referred to as a "edit slug". This part doesn't truly exist but is generated as an intermediate between Slug and Payload.
+
+|-PAYLOAD-| : |...[HA]...|EDITED-SLUG|...[HA]...|
+
+
+- Step along sequence according to supplied mutagensis (usually every codon, 3bp)
+- For each codon find Nearest PAM site to the codon to be edited and generate a slug
+- For each Slug make the desired edit based on mutagenesis plan
+- Add Homology Arms (HA) to complete generating the payload
 
 # Constraints
 

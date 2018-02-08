@@ -11,8 +11,13 @@ class CassetteFactory():
 
     Attributes
     ----------
-    exposure : float
-        Exposure in seconds.
+    region : slice
+        Slice of the mRNA cds
+    filename : string
+        path sequence fasta
+    reference : SeqIO
+
+    pam : PAM
 
     Methods
     -------
@@ -26,12 +31,6 @@ class CassetteFactory():
 
     """
     def __init__(self,filename,region):
-        """This is the form of a docstring
-        Parameters
-        ----------
-        filename : str
-        region : CDS region of sequence
-        """
 
         assert isinstance(region,slice)
         self.region = region
@@ -56,23 +55,32 @@ class CassetteFactory():
         return pam_sites
     
     def nearest_pam_site(self,target):
+        """ Find nearest pam_site to target
+
+        Parameters
+        ----------
+        target : slice
+        """
+
+        # Shortcut for calculating distance between 2 regions (target and pam_site?)
         dist = lambda t,ps: min([abs(t.start-ps.location.end), abs(t.stop-ps.location.start)])
         exclusive = lambda t,ps: ps.location.end < t.start or ps.location.start > t.stop
         pam_sites = [ps for ps in self.find_pam_sites() if exclusive(target,ps)]
         pam_distances = [dist(target,ps) for ps in pam_sites]
+
         return min(zip(pam_sites,pam_distances),key=lambda x:x[1])[0]
         
     def build_slug(self,target,pam_site=None):
-        """ Build a slug (|EDIT|...|PAM|) for a given target and pam
-        uses nearest pam if not defined
+        """ Build a slug (|EDIT|...|PAM|) for a given target and nearest pam or specified one
+        ...
         Parameters
         ----------
-        filename : str
-        region : CDS region of sequence
+        target : slice
+        pam_site : SeqFeature
         """
         if pam_site is None:
             pam_site = self.nearest_pam_site(target)
-        return Payload(self.reference.seq,target,pam_site)
+        return Slug(self.reference.seq,target,pam_site)
 
     def build_edit_cassette(self,target,pam_site=None,mut='GCU'):
         pl = self.build_payload(target,pam_site)
