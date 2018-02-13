@@ -149,7 +149,15 @@ class EditCassette():
         if pam_site_loc.strand == 1:
             return slice(max([pam_site_loc.start-self.crispr_len,0]),int(pam_site_loc.start))
         else:
-            return slice(int(pam_site_loc.start),min([len(self.slug.ref_seq),pam_site_loc.end+self.crispr_len]))
+            return slice(int(pam_site_loc.end),min([len(self.slug.ref_seq),pam_site_loc.end+self.crispr_len]))
+    
+    def gRNA_seq(self):
+        pam_site_loc = self.slug.pam_site.location
+        seq = self.slug.ref_seq[self.gRNA_site()]
+        if pam_site_loc.strand == -1: 
+            seq = seq.complement()
+
+        return seq
     
     def assemble_oligo(self,sp_primer,edit=None):
         """ Assemble completed edit cassette oligo
@@ -188,7 +196,7 @@ class EditCassette():
 
         slug_len = len(self.slug)
         pl = self.payload().assemble(mut)
-        self.crispr_rna = self.slug.ref_seq[self.gRNA_site()]
+        self.crispr_rna = self.gRNA_seq()
 
         parts = [sp_primer,pl,self.sg_promoter,self.crispr_rna,self.chip_primer]
         labels = ['subpool_primer','payload','gRNA_promoter','crRNA','end-primer']
@@ -202,10 +210,15 @@ class EditCassette():
             start +=len(part)
 
         out_seq = sp_primer+pl+self.sg_promoter+self.crispr_rna+self.chip_primer
+        annotations = {
+            'target':self.slug.target,
+            'slug_len':len(self.slug)
+        }
 
         edit_seq_rec = SeqRecord(seq=out_seq,
                                  id=self.name+'.'+str(id(out_seq)),
                                  name=self.name,
                                  description=str(mut),
+                                 annotations=annotations,
                                  features=features)
         return edit_seq_rec

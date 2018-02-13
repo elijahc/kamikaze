@@ -105,3 +105,6 @@ ENV/
 
 # Ignore ipynotebooks
 *.ipynb
+
+# Ignore MacOS
+.DS_Store

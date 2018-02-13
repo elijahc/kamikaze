@@ -35,6 +35,7 @@ class CassetteFactory():
         assert isinstance(region,slice)
         self.region = region
         self.filename = filename
+        self.pam_sites = None
         self.reference = next(SeqIO.parse(filename,'fasta'))
         self.ha_margins = ha_margins
         self.reference.features = [
@@ -54,9 +55,10 @@ class CassetteFactory():
         pam_sites = [i2ps(i,1) for i in fwd_hits]
         pam_sites.extend([i2ps(i,-1) for i in rev_hits])
         # pam_recs = SeqRecord(search_space,name='pam sites',features=pam_sites)
+        self.pam_sites = pam_sites
         return pam_sites
     
-    def nearest_pam_site(self,target):
+    def nearest_pam_site(self,target,n=1):
         """ Find nearest pam_site to target
 
         Parameters
@@ -67,12 +69,16 @@ class CassetteFactory():
         # Shortcut for calculating distance between 2 regions (target and pam_site?)
         dist = lambda t,ps: min([abs(t.start-ps.location.end), abs(t.stop-ps.location.start)])
         exclusive = lambda t,ps: ps.location.end < t.start or ps.location.start > t.stop
-        pam_sites = [ps for ps in self.find_pam_sites() if exclusive(target,ps)]
+        if self.pam_sites is None:
+            pam_sites = [ps for ps in self.find_pam_sites() if exclusive(target,ps)]
+        else:
+            pam_sites = [ps for ps in self.pam_sites if exclusive(target,ps)]
         pam_distances = [dist(target,ps) for ps in pam_sites]
+        sorted_pams = sorted(zip(pam_sites,pam_distances),key=lambda x:x[1])
+        return [p[0] for p in sorted_pams[:n]]
 
-        return min(zip(pam_sites,pam_distances),key=lambda x:x[1])[0]
         
-    def build_slug(self,target,pam_site=None):
+    def build_slug(self,target,pam_site=None,n=1,max_len=25):
         """ Build a slug (|EDIT|...|PAM|) for a given target and nearest pam or specified one
         ...
         Parameters
@@ -81,8 +87,9 @@ class CassetteFactory():
         pam_site : SeqFeature
         """
         if pam_site is None:
-            pam_site = self.nearest_pam_site(target)
-        return Slug(self.reference.seq,target,pam_site)
+            pam_sites = self.nearest_pam_site(target,n)
+        slugs = [Slug(self.reference.seq,target,ps) for ps in pam_sites]
+        return [s for s in slugs if len(s)<max_len]
 
     def build_payload(self,slug,mut='GCU'):
         pl = Payload(slug)

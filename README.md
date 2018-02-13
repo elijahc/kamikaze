@@ -50,8 +50,8 @@ HA
 ?Riboswitch?
 ?self-cleaveable-pam?
 
-3` |     20-25      |         |     35        |     20     |                    | 5'
-3` | Subpool Primer | Payload | gRNA Promoter | CRISPR RNA | ~20bp of TRACR RNA | 5'
+5` |     20-25      |         |     35        |     20     |                    | 3'
+5` | Subpool Primer | Payload | gRNA Promoter | CRISPR RNA | ~20bp of TRACR RNA | 3'
 
 | CRISPR RNA|PAM|
           |
@@ -60,8 +60,24 @@ HA
 
 Subpool primers have to be generated off of this:
 AGCTGGTATCCTTCAAACCC
+
 # Ideas
 Choose codon substitutions based on codon lookup tables by organism
+Pull all mutations for a gene from cosmic or TCGA
+imlement a "slug_max"
+summary stats
+- hist of slug lengths
+- codon coverage 
+- Return all slugs for a codon up to some slug length (20-25 good default)
+
+Build in some of Kleinstivers alternative Cas9 recognition variants
+- https://www.ncbi.nlm.nih.gov/pubmed/26524662
+
+QC
+- Is this likely to cut
+- - Check guides against db of working guides
+- - Is this likely to repair based on length of slug
+- - Is this likely to repair based on HA
 
 ## Mutagenesis
 - Basic codon substitution (NNN -> NNN) 20 options
