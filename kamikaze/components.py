@@ -4,20 +4,24 @@ from Bio.SeqUtils import nt_search, seq3
 from Bio.SeqRecord import SeqRecord
 from .parts import PAM, Slug, Payload, EditCassette
 
-# TODO: Finish refactoring terminology change from Payload -> Slug
 class CassetteFactory():
     """
-    Object for generating system components.
+    Object for generating system components (e.g. Slugs).
+
+    Parameters
+    ----------
+    filename : str
+        path reference sequence fasta
+    region : slice
+        Region of reference sequence to mutagenize
+    lib_name : str, optional
+    ha_margins : int or str, optional
+    files : list of str
 
     Attributes
     ----------
-    region : slice
-        Slice of the mRNA cds
-    filename : string
-        path sequence fasta
     reference : SeqIO
     pam : PAM
-    ha_margins : int
 
     Methods
     -------
@@ -28,7 +32,6 @@ class CassetteFactory():
     build_slug(target,pam_site=None)
         Build slug for target and pam_site pair.
         Will find nearest pam_site to target if not defined
-
     """
     def __init__(self,filename,region,lib_name='default',ha_margins=10):
 
