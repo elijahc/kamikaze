@@ -13,13 +13,6 @@ kamikaze
         :target: https://kamikaze.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
-.. image:: https://travis-ci.org/elijahc/kamikaze.svg?branch=master
-        :target: https://travis-ci.org/elijahc/kamikaze
-        :alt: Travis Build Status
-
-[![Build Status](https://travis-ci.org/elijahc/kamikaze.svg?branch=master)](https://travis-ci.org/elijahc/kamikaze)
-
-
 Python package for designing CREATE based suicide plasmids for precision gene editing
 
 
