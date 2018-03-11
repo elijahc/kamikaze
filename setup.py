@@ -13,7 +13,7 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    # TODO: Put package requirements here
+    'biopython'
 ]
 
 setup_requirements = [
@@ -23,7 +23,7 @@ setup_requirements = [
 
 test_requirements = [
     'pytest',
-    # TODO: Put package test requirements here
+    'biopython',
 ]
 
 setup(
