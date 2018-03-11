@@ -36,13 +36,15 @@ class CassetteFactory():
     def __init__(self,filename,region,lib_name='default',ha_margins=10):
 
         assert isinstance(region,slice)
+        assert isinstance(lib_name,str)
+        assert isinstance(ha_margins,(str,int))
         self.region = region
         self.filename = filename
         self.pam_sites = None
         self.reference = next(SeqIO.parse(filename,'fasta'))
         self.ha_margins = ha_margins
         self.reference.features = [
-            SeqFeature(FeatureLocation(region.start,region.stop),type='cds',strand=1)
+            SeqFeature(FeatureLocation(region.start,region.stop),type='mutagenesis_region',strand=1)
             ]
         self.pam = PAM(strain='cas9')
         self.lib_name = lib_name
@@ -60,7 +62,7 @@ class CassetteFactory():
         # pam_recs = SeqRecord(search_space,name='pam sites',features=pam_sites)
         self.pam_sites = pam_sites
         return pam_sites
-    
+
     def nearest_pam_site(self,target,n=1):
         """ Find nearest pam_site to target
 
@@ -68,6 +70,7 @@ class CassetteFactory():
         ----------
         target : slice
         """
+        assert (isinstance(target,slice)),"target must be slice object"
 
         # Shortcut for calculating distance between 2 regions (target and pam_site?)
         dist = lambda t,ps: min([abs(t.start-ps.location.end), abs(t.stop-ps.location.start)])
@@ -80,16 +83,17 @@ class CassetteFactory():
         sorted_pams = sorted(zip(pam_sites,pam_distances),key=lambda x:x[1])
         return [p[0] for p in sorted_pams[:n]]
 
-        
-    def build_slug(self,target,pam_site=None,n=1,max_len=25):
+    def build_slug(self,target,pam_sites=None,n=1,max_len=25):
         """ Build a slug (|EDIT|...|PAM|) for a given target and nearest pam or specified one
         ...
         Parameters
         ----------
         target : slice
-        pam_site : SeqFeature
+        pam_sites : SeqFeature, optional
+        n : int, optional
+        max_len : int, optional
         """
-        if pam_site is None:
+        if pam_sites is None:
             pam_sites = self.nearest_pam_site(target,n)
         slugs = [Slug(self.reference.seq,target,ps) for ps in pam_sites]
         return [s for s in slugs if len(s)<max_len]
