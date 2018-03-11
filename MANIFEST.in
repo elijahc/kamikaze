@@ -2,6 +2,8 @@ include CONTRIBUTING.rst
 include HISTORY.rst
 include LICENSE
 include README.rst
+include kamikaze/data/kras_mrna_va.fa
+include kamikaze/data/galk.fa
 
 recursive-include tests *
 recursive-exclude * __pycache__

@@ -9,12 +9,10 @@ from kamikaze.components import CassetteFactory
 
 @pytest.fixture
 def fake_params():
-    """Sample pytest fixture.
 
-    See more at: http://doc.pytest.org/en/latest/fixture.html
-    """
+    from kamikaze.datasets import kras
     test_params = dict(
-            filename='/Users/elijahc/dev/kamikaze/kamikaze/data/kras_mrna_va.fa',
+            filename=kras(),
             region=slice(192,762),
             lib_name='KRAS_mutagenesis',
             )
