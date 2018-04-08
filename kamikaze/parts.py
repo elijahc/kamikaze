@@ -6,8 +6,6 @@ from Bio.SeqFeature import SeqFeature,FeatureLocation
 from .edits import CodonEdit,Swap
 from .pams import *
 
-
-
 class Slug():
     """Target codon, pam, and any gap between
 
@@ -158,7 +156,7 @@ class EditCassette():
             seq = seq.complement()
 
         return seq
-    
+
     def assemble_oligo(self,sp_primer,edit=None):
         """ Assemble completed edit cassette oligo
         ...
@@ -169,7 +167,7 @@ class EditCassette():
 
         gRNA_promoter : Seq or str
             Promoter sequence for the CRISPR guide RNA (~35bp)
-        
+
         edit : str or CodonEdit-like
             if a string is passed it will substitute the codon for the string passed
 
@@ -215,10 +213,11 @@ class EditCassette():
             'slug_len':len(self.slug)
         }
 
+        desc = "|tgt:"+str(self.slug.target.start)+".."+str(self.slug.target.stop)+"|"+str(mut)
         edit_seq_rec = SeqRecord(seq=out_seq,
                                  id=self.name+'.'+str(id(out_seq)),
                                  name=self.name,
-                                 description=str(mut),
+                                 description=desc,
                                  annotations=annotations,
                                  features=features)
         return edit_seq_rec

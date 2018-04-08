@@ -11,7 +11,7 @@ class Swap(CodonEdit):
         return self.new_codon
 
     def __str__(self):
-        return str(self.codon) + ' -> ' + str(self.new_codon)
+        return str(self.codon) + ' to ' + str(self.new_codon)
 
 
 
